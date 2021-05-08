@@ -1,7 +1,5 @@
 using LightGraphs, MetaGraphs
 using CSV, DataFrames
-using Compose, GraphPlot
-using Cairo, Fontconfig
 
 # read in info
 nodes = DataFrame(CSV.File("data/nodes.csv"))
@@ -29,27 +27,21 @@ function get_node_numbers(row::DataFrameRow)
     return filtered_1.nodenum[1], filtered_2.nodenum[1]
 end
 
-# build graph
-g = MetaDiGraph(SimpleDiGraph(size(nodes)[1]))
+function build_graph()
+    g = MetaDiGraph(SimpleDiGraph(size(nodes)[1]))
 
-# add node properties
-for row in eachrow(nodes)
-    props = Dict(p=>getproperty(row,Symbol(p)) for p in node_props)
-    set_props!(g, row.nodenum, props)
+    # add node properties
+    for row in eachrow(nodes)
+        props = Dict(p=>getproperty(row,Symbol(p)) for p in node_props)
+        set_props!(g, row.nodenum, props)
+    end
+
+    # add edges and properties
+    for row in eachrow(edges)
+        props = Dict(p=>getproperty(row,Symbol(p)) for p in edge_props)
+        nodenums = get_node_numbers(row)
+        add_edge!(g, nodenums..., props)
+    end
+
+    return g
 end
-
-# add edges and properties
-for row in eachrow(edges)
-    props = Dict(p=>getproperty(row,Symbol(p)) for p in edge_props)
-    nodenums = get_node_numbers(row)
-    add_edge!(g, nodenums..., props)
-end
-
-# some initial playing around
-clusters = sort(connected_components(g), by=length, rev=true)
-sg = g[clusters[1]]
-nl = [sg.vprops[i][:family_name] for i in 1:nv(sg)]
-gplot(sg, nodelabel=nl, arrowlengthfrac=0.05)
-
-colors = [colorant"black" for i in  1:nv(sg)]
-draw(PNG("test1.png", 40cm, 40cm), gplot(sg, nodelabel=nl, arrowlengthfrac=0.02, edgestrokec=colorant"black"))

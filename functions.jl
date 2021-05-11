@@ -80,5 +80,18 @@ function write_JSON(io::IO, g::MetaDiGraph=build_graph())
         bigstr = string(bigstr, item_string(g.eprops, edge))
     end
     bigstr = string(bigstr, "\n  ],\n};")
+    bigstr = string(bigstr, "\n
+elements.nodes.forEach((n) => {
+const data = n.data;
+    
+data.NodeTypeFormatted = data.NodeType;
+    
+n.data.orgPos = {
+  x: n.position.x,
+  y: n.position.y
+  };
+});
+    
+export default elements;")
     print(io, bigstr)
 end

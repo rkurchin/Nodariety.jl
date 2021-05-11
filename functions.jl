@@ -45,3 +45,33 @@ function build_graph()
 
     return g
 end
+
+function item_string(gprops, ind)
+    local str = "    {\n      \"data\":\n     {\n        \"id\": \"$(ind)\","
+    props = gprops[ind]
+    for k in keys(props)
+        prop = props[k]
+        local propstr
+        if !(typeof(prop)<:Number)
+            propstr = "\"$prop\""
+        else
+            propstr = string(prop)
+        end
+        str = string(str, "\n        \"$(k)\": $propstr,")
+    end
+    str = string(str[1:end-1], "\n      }\n    },\n")
+    return str
+end
+
+function write_JSON(io::IO, g::MetaDiGraph)
+    local bigstr = "const elements = {\n  \"nodes\": [\n"
+    for nodenum in keys(g.vprops)
+        bigstr = string(bigstr, item_string(g.vprops, nodenum))
+    end
+    bigstr = string(bigstr, "\n  ],\n  \"edges\": [\n")
+    for edge in keys(g.eprops)
+        bigstr = string(bigstr, item_string(g.eprops, edge))
+    end
+    bigstr = string(bigstr, "\n  ],\n};")
+    print(io, bigstr)
+end

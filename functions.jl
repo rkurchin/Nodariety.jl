@@ -2,33 +2,33 @@ using LightGraphs, MetaGraphs
 using CSV, DataFrames
 using GraphMakie
 
-# read in info
-nodes = DataFrame(CSV.File("data/nodes.csv"))
-edges = DataFrame(CSV.File("data/edges.csv"))
-
-node_props = [Symbol(p) for p in names(nodes)]
-edge_props = [Symbol(p) for p in names(edges) if !any(contains.(p, ["family_name","given_name"]))]
-
-# add index column
-nodes.nodenum = 1:size(nodes)[1]
-
 # helper function
-function get_node_numbers(row::DataFrameRow)
+function get_node_numbers(edge::DataFrameRow, nodes)
     local filtered_1, filtered_2
-    filtered_1 = filter(r->(r.family_name==row.family_name_1), nodes)
-    filtered_2 = filter(r->(r.family_name==row.family_name_2), nodes)
+    filtered_1 = filter(r->(r.family_name==edge.family_name_1), nodes)
+    filtered_2 = filter(r->(r.family_name==edge.family_name_2), nodes)
     # to handle missing given names, can't filter on both at once
     if size(filtered_1)[1]>1
-        filtered_1 = filter(r->(r.given_name==row.given_name_1), filtered_1)
+        filtered_1 = filter(r->(r.given_name==edge.given_name_1), filtered_1)
     end
     if size(filtered_2)[1]>1
-        filtered_2 = filter(r->(r.given_name==row.given_name_2), filtered_2)
+        filtered_2 = filter(r->(r.given_name==edge.given_name_2), filtered_2)
     end
     @assert size(filtered_1)[1]==1 && size(filtered_2)[1]==1 "Seems you might have a missing or duplicate node at $row"
     return filtered_1.nodenum[1], filtered_2.nodenum[1]
 end
 
 function build_graph()
+    # read in data
+    nodes = DataFrame(CSV.File("data/nodes.csv"))
+    edges = DataFrame(CSV.File("data/edges.csv"))
+
+    node_props = [Symbol(p) for p in names(nodes)]
+    edge_props = [Symbol(p) for p in names(edges) if !any(contains.(p, ["family_name","given_name"]))]
+
+    # add index column
+    nodes.nodenum = 1:size(nodes)[1]    
+
     g = MetaDiGraph(SimpleDiGraph(size(nodes)[1]))
 
     # add node properties
@@ -40,7 +40,7 @@ function build_graph()
     # add edges and properties
     for row in eachrow(edges)
         props = Dict(p=>getproperty(row,Symbol(p)) for p in edge_props)
-        nodenums = get_node_numbers(row)
+        nodenums = get_node_numbers(row, nodes)
         add_edge!(g, nodenums..., props)
     end
 
@@ -83,8 +83,6 @@ function write_JSON(io::IO, g::MetaDiGraph=build_graph())
     bigstr = string(bigstr, "\n
 elements.nodes.forEach((n) => {
 const data = n.data;
-    
-data.NodeTypeFormatted = data.NodeType;
     
 n.data.orgPos = {
   x: n.position.x,

@@ -1,5 +1,6 @@
 using LightGraphs, MetaGraphs
 using CSV, DataFrames
+using GraphMakie
 
 # read in info
 nodes = DataFrame(CSV.File("data/nodes.csv"))
@@ -46,8 +47,8 @@ function build_graph()
     return g
 end
 
-function item_string(gprops, ind)
-    local str = "    {\n      \"data\":\n     {\n        \"id\": \"$(ind)\","
+function item_string(gprops, ind, pos=nothing)
+    local str = "    {\n      \"data\":\n     {\n        \"id\": \"$(ind)\",\n        \"selected\": false,"
     props = gprops[ind]
     for k in keys(props)
         prop = props[k]
@@ -59,14 +60,20 @@ function item_string(gprops, ind)
         end
         str = string(str, "\n        \"$(k)\": $propstr,")
     end
-    str = string(str[1:end-1], "\n      }\n    },\n")
+    str = string(str[1:end-1], "\n      },")
+    if !isnothing(pos)
+        str = string(str, "\n      \"position\": {\n        \"x\": $(pos[1]),\n        \"y\": $(pos[2])\n      },")
+    end
+    str = string(str, "\n      \"selected\": false\n    },\n")
     return str
 end
 
-function write_JSON(io::IO, g::MetaDiGraph)
+function write_JSON(io::IO, g::MetaDiGraph=build_graph())
+    gp = graphplot(g)
+    pos = gp.plot.attributes.node_positions.val
     local bigstr = "const elements = {\n  \"nodes\": [\n"
     for nodenum in keys(g.vprops)
-        bigstr = string(bigstr, item_string(g.vprops, nodenum))
+        bigstr = string(bigstr, item_string(g.vprops, nodenum, pos[nodenum]))
     end
     bigstr = string(bigstr, "\n  ],\n  \"edges\": [\n")
     for edge in keys(g.eprops)

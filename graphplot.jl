@@ -1,6 +1,6 @@
 using Compose, GraphPlot
 using Cairo, Fontconfig
-include("build_graph.jl")
+include("functions.jl")
 
 g = build_graph()
 

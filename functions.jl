@@ -50,6 +50,14 @@ end
 function item_string(gprops, ind, pos=nothing)
     local str = "    {\n      \"data\":\n     {\n        \"id\": \"$(ind)\",\n        \"selected\": false,"
     props = gprops[ind]
+    isnode = typeof(ind) <: Integer
+    if isnode
+        str = string(str, "\n        \"NodeType\": \"Cheese\",")
+    else
+        str = string(str, "\n        \"interaction\": \"cc\",")
+        str = string(str, "\n        \"source\": \"$(ind.src)\",")
+        str = string(str, "\n        \"target\": \"$(ind.dst)\",")
+    end
     for k in keys(props)
         prop = props[k]
         local propstr

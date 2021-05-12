@@ -53,6 +53,7 @@ function item_string(gprops, ind, pos=nothing)
     isnode = typeof(ind) <: Integer
     if isnode
         str = string(str, "\n        \"NodeType\": \"Cheese\",")
+        str = string(str, "\n        \"name\": \"$(props[:given_name]) $(props[:family_name])\",")
     else
         str = string(str, "\n        \"interaction\": \"cc\",")
         str = string(str, "\n        \"source\": \"$(ind.src)\",")
@@ -76,9 +77,24 @@ function item_string(gprops, ind, pos=nothing)
     return str
 end
 
-function write_JSON(io::IO, g::MetaDiGraph=build_graph())
+function write_JSON(io::IO, g::MetaDiGraph=build_graph(); min_x = 1300, max_x = 6500, min_y = 2500, max_y = 5000)
     gp = graphplot(g)
     pos = gp.plot.attributes.node_positions.val
+    # transform to something sensible as pixel units...
+    x = [p[1] for p in pos]
+    y = [p[2] for p in pos]
+    # first shift (minimum is always negative...I think)
+    x = x .- minimum(x)
+    y = y .- minimum(y)
+    # then scale to be 0 - 1
+    x = x ./ maximum(x)
+    y = y ./ maximum(y)
+    # now shift and scale again
+    x_scale = max_x - min_x
+    y_scale = max_y - min_y
+    x = min_x .+ x_scale .* x
+    y = min_y .+ y_scale .* y
+    pos = [[x[i], y[i]] for i in 1:length(x)]
     local bigstr = "const elements = {\n  \"nodes\": [\n"
     for nodenum in keys(g.vprops)
         bigstr = string(bigstr, item_string(g.vprops, nodenum, pos[nodenum]))
@@ -90,7 +106,6 @@ function write_JSON(io::IO, g::MetaDiGraph=build_graph())
     bigstr = string(bigstr, "\n  ],\n};")
     bigstr = string(bigstr, "\n
 elements.nodes.forEach((n) => {
-const data = n.data;
     
 n.data.orgPos = {
   x: n.position.x,

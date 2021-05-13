@@ -1,5 +1,5 @@
 using GraphMakie, CairoMakie
-include("functions.jl")
+include("build_graph.jl")
 
 g = build_graph()
 clusters = sort(connected_components(g), by=length, rev=true)

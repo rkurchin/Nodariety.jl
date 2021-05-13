@@ -1,51 +1,4 @@
-using LightGraphs, MetaGraphs
-using CSV, DataFrames
-using GraphMakie
-
-# helper function
-function get_node_numbers(edge::DataFrameRow, nodes)
-    local filtered_1, filtered_2
-    filtered_1 = filter(r->(r.family_name==edge.family_name_1), nodes)
-    filtered_2 = filter(r->(r.family_name==edge.family_name_2), nodes)
-    # to handle missing given names, can't filter on both at once
-    if size(filtered_1)[1]>1
-        filtered_1 = filter(r->(r.given_name==edge.given_name_1), filtered_1)
-    end
-    if size(filtered_2)[1]>1
-        filtered_2 = filter(r->(r.given_name==edge.given_name_2), filtered_2)
-    end
-    @assert size(filtered_1)[1]==1 && size(filtered_2)[1]==1 "Seems you might have a missing or duplicate node at $row"
-    return filtered_1.nodenum[1], filtered_2.nodenum[1]
-end
-
-function build_graph()
-    # read in data
-    nodes = DataFrame(CSV.File("data/nodes.csv"))
-    edges = DataFrame(CSV.File("data/edges.csv"))
-
-    node_props = [Symbol(p) for p in names(nodes)]
-    edge_props = [Symbol(p) for p in names(edges) if !any(contains.(p, ["family_name","given_name"]))]
-
-    # add index column
-    nodes.nodenum = 1:size(nodes)[1]    
-
-    g = MetaDiGraph(SimpleDiGraph(size(nodes)[1]))
-
-    # add node properties
-    for row in eachrow(nodes)
-        props = Dict(p=>getproperty(row,Symbol(p)) for p in node_props)
-        set_props!(g, row.nodenum, props)
-    end
-
-    # add edges and properties
-    for row in eachrow(edges)
-        props = Dict(p=>getproperty(row,Symbol(p)) for p in edge_props)
-        nodenums = get_node_numbers(row, nodes)
-        add_edge!(g, nodenums..., props)
-    end
-
-    return g
-end
+include("build_graph.jl")
 
 function item_string(gprops, ind, pos=nothing)
     local str = "    {\n      \"data\":\n     {\n        \"id\": \"$(ind)\",\n        \"selected\": false,"
@@ -77,9 +30,9 @@ function item_string(gprops, ind, pos=nothing)
     return str
 end
 
-function write_JSON(io::IO, g::MetaDiGraph=build_graph(); min_x = 1300, max_x = 6500, min_y = 2500, max_y = 5000)
-    gp = graphplot(g)
-    pos = gp.plot.attributes.node_positions.val
+function write_JSON(io::IO, g::MetaDiGraph=build_graph(); 
+                    min_x = 1300, max_x = 6500, min_y = 2500, max_y = 5000)
+    pos= NetworkLayout.Spring.layout(adjacency_matrix(g))
     # transform to something sensible as pixel units...
     x = [p[1] for p in pos]
     y = [p[2] for p in pos]
@@ -97,6 +50,7 @@ function write_JSON(io::IO, g::MetaDiGraph=build_graph(); min_x = 1300, max_x = 
     pos = [[x[i], y[i]] for i in 1:length(x)]
     local bigstr = "const elements = {\n  \"nodes\": [\n"
     for nodenum in keys(g.vprops)
+        #bigstr = string(bigstr, item_string(g.vprops, nodenum))
         bigstr = string(bigstr, item_string(g.vprops, nodenum, pos[nodenum]))
     end
     bigstr = string(bigstr, "\n  ],\n  \"edges\": [\n")

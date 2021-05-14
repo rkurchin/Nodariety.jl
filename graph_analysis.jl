@@ -26,6 +26,7 @@ end
 
 const centrality_fcns = [betweenness_centrality, closeness_centrality, degree_centrality, eigenvector_centrality, katz_centrality, pagerank, stress_centrality, radiality_centrality]
 
+# note that eigenvector_centrality gives different results upon repeated application...
 function all_centrals(g, fcns = centrality_fcns)
     for f in fcns
         node = most_central(g, f)

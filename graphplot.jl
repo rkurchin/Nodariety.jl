@@ -1,6 +1,6 @@
 using Compose, GraphPlot
 using Cairo, Fontconfig
-include("functions.jl")
+include("build_graph.jl")
 
 g = build_graph()
 
@@ -12,6 +12,8 @@ gplot(sg, nodelabel=nl, arrowlengthfrac=0.05)
 
 colors = [colorant"black" for i in  1:nv(sg)]
 draw(PNG("test1.png", 40cm, 40cm), gplot(sg, nodelabel=nl, arrowlengthfrac=0.02, edgestrokec=colorant"black"))
+
+# function to draw with nodes/edges colored by particular fields...
 
 #=
 function gplot{V, T<:Real}(

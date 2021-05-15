@@ -1,6 +1,5 @@
 using LightGraphs, MetaGraphs
-using CSV, DataFrames
-using LightGraphs, NetworkLayout
+using DataFrames
 
 # helper function
 function get_node_numbers(edge::DataFrameRow, nodes)
@@ -18,33 +17,29 @@ function get_node_numbers(edge::DataFrameRow, nodes)
     return filtered_1.nodenum[1], filtered_2.nodenum[1]
 end
 
-function build_graph()
-    # read in data
-    nodes = DataFrame(CSV.File("data/nodes.csv"))
-    edges = DataFrame(CSV.File("data/edges.csv"))
-
+function build_hyphengraph(nodes::DataFrame = nodes, edges::DataFrame = edges)
     node_props = [Symbol(p) for p in names(nodes)]
     edge_props = [Symbol(p) for p in names(edges) if !any(contains.(p, ["family_name","given_name"]))]
 
     # add index column
     nodes.nodenum = 1:size(nodes)[1]    
 
-    g = MetaDiGraph(SimpleDiGraph(size(nodes)[1]))
+    hg = MetaDiGraph(SimpleDiGraph(size(nodes)[1]))
 
     # add node properties
     for row in eachrow(nodes)
         props = Dict(p=>getproperty(row,Symbol(p)) for p in node_props)
-        set_props!(g, row.nodenum, props)
+        set_props!(hg, row.nodenum, props)
     end
 
     # add edges and properties
     for row in eachrow(edges)
         props = Dict(p=>getproperty(row,Symbol(p)) for p in edge_props)
         nodenums = get_node_numbers(row, nodes)
-        add_edge!(g, nodenums..., props)
+        add_edge!(hg, nodenums..., props)
     end
 
-    return g, nodes, edges
+    return hg
 end
 
 """

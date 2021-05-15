@@ -1,3 +1,5 @@
+using NetworkLayout
+
 function item_string(gprops, ind, pos=nothing)
     local str = "    {\n      \"data\":\n     {\n        \"id\": \"$(ind)\",\n        \"selected\": false,"
     props = gprops[ind]

@@ -1,16 +1,19 @@
 module Nodariety
 
+using CSV, DataFrames
 using LightGraphs
 
-include("build_graph.jl")
-export g, nodes, edges
-g, nodes, edges = build_graph()
+include("build_hyphengraph.jl")
+nodes = DataFrame(CSV.File("data/nodes.csv"))
+edges = DataFrame(CSV.File("data/edges.csv"))
+hg = build_hyphengraph()
+export hg, nodes, edges
 
 include("demographics.jl")
 # export ...
 
 include("graph_analysis.jl")
-export centrality_fcns
+export centrality_fcns, all_centrals
 export longest_path, most_central
 
 

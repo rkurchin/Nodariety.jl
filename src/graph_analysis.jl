@@ -1,5 +1,7 @@
 using LongestPaths
 
+get_clusters(graph::AbstractGraph=hg) = sort(connected_components(graph), by=length, rev=true)
+
 function longest_path(graph::MetaDiGraph=hg)
     local longest_length = 0
     local longest_start_inds = [1]

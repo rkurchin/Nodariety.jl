@@ -44,5 +44,11 @@ function build_graph()
         add_edge!(g, nodenums..., props)
     end
 
-    return g
+    return g, nodes, edges
 end
+
+"""
+open("data/elements.js","w") do io
+    write_JSON(io, g)
+end
+"""

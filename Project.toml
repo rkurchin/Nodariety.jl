@@ -1,3 +1,8 @@
+name = "Nodariety"
+uuid = "ffab58b1-199d-4bd9-83d9-8aaad2b4ff2e"
+authors = ["Rachel Kurchin <rkurchin@cmu.edu>"]
+version = "0.1.0"
+
 [deps]
 CSV = "336ed68f-0bac-5ca0-87d4-7b16caf5d00b"
 Cairo = "159f3aea-2a34-519c-b102-8c37f9878175"
@@ -11,5 +16,4 @@ LightGraphs = "093fc24a-ae57-5d10-9952-331d41423f4d"
 LongestPaths = "3a25c17e-307c-411a-a047-890a9a5fbb4d"
 MetaGraphs = "626554b9-1ddb-594c-aa3c-2596fe9399a5"
 NetworkLayout = "46757867-2c16-5918-afeb-47bfcb05e46a"
-Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"

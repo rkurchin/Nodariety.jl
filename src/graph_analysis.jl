@@ -19,7 +19,7 @@ end
 
 # centrality_fcn can be any of the LightGraphs centrality measures: https://juliagraphs.org/LightGraphs.jl/stable/centrality/
 # e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
-function most_central(g, centrality_fcn)
+function most_central(centrality_fcn, graph=g)
     c = centrality_fcn(g)
     return g.vprops[argmax(c)]
 end
@@ -27,9 +27,9 @@ end
 const centrality_fcns = [betweenness_centrality, closeness_centrality, degree_centrality, eigenvector_centrality, katz_centrality, pagerank, stress_centrality, radiality_centrality]
 
 # note that eigenvector_centrality gives different results upon repeated application...
-function all_centrals(g, fcns = centrality_fcns)
-    for f in fcns
-        node = most_central(g, f)
-        println("$f: $(node[:given_name]) $(node[:family_name])")
-    end
-end
+# function all_centrals(fcns = centrality_fcns, graph=g)
+#     for f in fcns
+#         node = most_central(g, f)
+#         println("$f: $(node[:given_name]) $(node[:family_name])")
+#     end
+# end

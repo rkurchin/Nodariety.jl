@@ -1,5 +1,3 @@
-include("build_graph.jl")
-
 function item_string(gprops, ind, pos=nothing)
     local str = "    {\n      \"data\":\n     {\n        \"id\": \"$(ind)\",\n        \"selected\": false,"
     props = gprops[ind]
@@ -30,7 +28,7 @@ function item_string(gprops, ind, pos=nothing)
     return str
 end
 
-function write_JSON(io::IO, g::MetaDiGraph=build_graph(); 
+function write_JSON(io::IO, g::MetaDiGraph=g; 
                     min_x = 1300, max_x = 6500, min_y = 2500, max_y = 5000)
     pos= NetworkLayout.Spring.layout(adjacency_matrix(g))
     # transform to something sensible as pixel units...

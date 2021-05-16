@@ -1,8 +1,8 @@
 using LongestPaths
 
-get_clusters(graph::AbstractGraph=hg) = sort(connected_components(graph), by=length, rev=true)
+get_clusters(g::AbstractGraph = hg) = sort(connected_components(g.graph), by=length, rev=true)
 
-function longest_path(graph::MetaDiGraph=hg)
+function longest_path(graph::HyphenGraph = hg)
     local longest_length = 0
     local longest_start_inds = [1]
     for i=1:nv(graph)
@@ -21,8 +21,8 @@ end
 
 # centrality_fcn can be any of the LightGraphs centrality measures: https://juliagraphs.org/LightGraphs.jl/stable/centrality/
 # e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
-function most_central(centrality_fcn::Function, graph::MetaDiGraph=hg)
-    c = centrality_fcn(g)
+function most_central(centrality_fcn::Function, graph::HyphenGraph = hg)
+    c = centrality_fcn(graph)
     return graph.vprops[argmax(c)]
 end
 

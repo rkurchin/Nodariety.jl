@@ -70,3 +70,9 @@ n.data.orgPos = {
 export default elements;")
     print(io, bigstr)
 end
+
+"""
+open("data/elements.js","w") do io
+    write_JSON(io, g)
+end
+"""

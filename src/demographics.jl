@@ -4,11 +4,11 @@ using CairoMakie
 
 function get_histogram_data(df, column_name)
     subset = dropmissing(df, column_name)
-    gd = groupby(nodes, colunn_name)
+    gd = groupby(node_df, colunn_name)
     # ...
 end
 
-# subset = dropmissing(nodes, :birth_year)
+# subset = dropmissing(node_df, :birth_year)
 # bins = vcat(1500:20:2000)
 # hist(subset.birth_year, bins=bins)
 
@@ -20,7 +20,7 @@ end
 
 # for the case of country...
 function country_hist()
-    data = skipmissing(nodes.birth_country)
+    data = skipmissing(node_df.birth_country)
     datamap = countmap(data)
     s = sort(unique(data), by=x->datamap[x], rev=true)
     #barplot((x -> datamap[x]).(s), xticks=(1:36, s), xrotation=90)

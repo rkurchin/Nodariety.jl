@@ -13,7 +13,7 @@ function get_node_numbers(edge::DataFrameRow, node_info::DataFrame)
     if size(dst_info)[1]>1
         dst_info = filter(r->(r.given_name==edge.given_name_2), dst_info)
     end
-    @assert size(src_info)[1]==1 && size(dst_info)[1]==1 "Seems you might have a missing or duplicate node at $row"
+    @assert size(src_info)[1]==1 && size(dst_info)[1]==1 "Seems you might have a missing or duplicate node at $edge"
     return src_info.nodenum[1], dst_info.nodenum[1]
 end
 

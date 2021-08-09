@@ -1,6 +1,6 @@
 using DataFrames
 using StatsBase
-using CairoMakie
+using GLMakie
 
 function get_histogram_data(df, column_name)
     subset = dropmissing(df, column_name)

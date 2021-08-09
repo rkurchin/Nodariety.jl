@@ -18,7 +18,6 @@ export most_central, all_centrals
 
 # TODO: save country_continent to json instead of jls
 include("graph_vis.jl")
-export plot_graph
 
 include("write_json.jl")
 export write_JSON

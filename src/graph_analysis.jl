@@ -21,9 +21,9 @@ end
 
 # centrality_fcn can be any of the LightGraphs centrality measures: https://juliagraphs.org/LightGraphs.jl/stable/centrality/
 # e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
-function most_central(centrality_fcn::Function, graph::HyphenGraph = hg)
-    c = centrality_fcn(graph)
-    return graph.vprops[argmax(c)]
+function most_central(centrality_fcn::Function, g::HyphenGraph = hg)
+    c = centrality_fcn(g.graph)
+    return g.graph.vprops[argmax(c)]
 end
 
 const centrality_fcns = [betweenness_centrality, closeness_centrality, degree_centrality, eigenvector_centrality, katz_centrality, pagerank, stress_centrality, radiality_centrality]

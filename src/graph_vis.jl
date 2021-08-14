@@ -1,8 +1,9 @@
 using Compose, Colors
 using Cairo, Fontconfig
-using LightGraphs, GraphPlot
+using LightGraphs
 using DataFrames
 using Serialization
+using GLMakie, GraphMakie
 
 default_palette_start_ind = 10
 
@@ -42,7 +43,6 @@ function get_field_subfield_color_pickers(prop::String, hg::HyphenGraph = hg; pa
     end
 end
 
-# TODO: all this stuff
 # and for continents...
 function get_country_color_picker(hg::HyphenGraph = hg; palette_start_ind = default_palette_start_ind)
     country_continent = deserialize(joinpath(@__DIR__, "..", "data", "country_continent.jls"))
@@ -68,13 +68,18 @@ function get_country_color_picker(hg::HyphenGraph = hg; palette_start_ind = defa
 end
 
 # aaand years...
-function get_year_color_picker(all_years::Vector{I}) where I<:Integer
-    min_year = minimum(all_years)
+# (min year is to set a floor to avoid Euclid et al. skewing the colorscale)
+function get_year_color_picker(all_years::Vector{I}; min_year=1000) where I<:Integer
     max_year = maximum(all_years)
     num_years = max_year - min_year + 1
     colors = RGB.(colormatch.(range(425, 670, length=num_years)))
     year_color_picker = Dict{Union{String,Integer,Missing},RGB}(i+min_year-1=>colors[i] for i in 1:num_years)
     year_color_picker[missing] = colorant"grey"
+    for year in all_years
+        if year < min_year
+            year_color_picker[year] = colors[1]
+        end
+    end
     return year_color_picker
 end
 
@@ -108,7 +113,7 @@ function get_graph_colors(node_color_prop,
         end
     end
 
-    if occursin(edge_color_prop, "field")
+    if occursin("field", edge_color_prop)
         edge_color_picker = get_field_subfield_color_pickers(edge_color_prop, hg, palette_start_ind = palette_start_ind)
     end
 
@@ -135,8 +140,17 @@ function get_graph_colors(node_color_prop,
         ec = default_edge_color
     end
 
+    # TODO: replace this with a function that takes the dict and the default
     if !isnothing(node_color_picker)
-        nc = [node_color_picker[hg.graph.vprops[j][Symbol(node_color_prop)]] for j in 1:nv(hg)]
+        #nc = [node_color_picker[hg.graph.vprops[j][Symbol(node_color_prop)]] for j in 1:nv(hg)]
+        nc = map(1:nv(hg)) do j
+            key = hg.graph.vprops[j][Symbol(node_color_prop)]
+            if ismissing(key)
+                return default_node_color
+            else
+                return node_color_picker[key]
+            end
+        end
     else
         nc = default_node_color
     end
@@ -173,34 +187,19 @@ function plot_graph(hg::HyphenGraph = hg;
 
     nc, ec = get_graph_colors(node_color_prop, edge_color_prop, hg, palette_start_ind=palette_start_ind, default_node_color=default_node_color, default_edge_color=default_edge_color, male_color=male_color, female_color=female_color)
 
-    gplot(hg.graph, nodelabel=nl, nodefillc=nc, edgestrokec=ec, arrowlengthfrac=0.05)
+    f, ax, p = graphplot(hg.graph,
+                         arrow_show=true,
+                         nlabels=nl,
+                         node_color = nc,
+
+    )
+    hidedecorations!(ax); hidespines!(ax)
+    deregister_interaction!(ax, :rectanglezoom)
+    register_interaction!(ax, :ndrag, NodeDrag(p))
+    register_interaction!(ax, :edrag, EdgeDrag(p))
+    return f
 end
 
-
-
-#=
-function gplot{V, T<:Real}(
-    G::AbstractGraph{V},
-    locs_x::Vector{T}, locs_y::Vector{T};
-    nodelabel::Union(Nothing, Vector) = nothing,
-    nodelabelc::ComposeColor = colorant"black",
-    nodelabelsize::Union(Real, Vector) = 4,
-    nodelabeldist::Real = 0,
-    nodelabelangleoffset::Real = π/4.0,
-    edgelabel::Union(Nothing, Vector) = nothing,
-    edgelabelc::ComposeColor = colorant"black",
-    edgelabelsize::Union(Real, Vector) = 4,
-    edgestrokec::ComposeColor = colorant"lightgray",
-    edgelinewidth::Union(Real, Vector) = 1,
-    edgelabeldistx::Real = 0,
-    edgelabeldisty::Real = 0,
-    nodesize::Union(Real, Vector) = 1,
-    nodefillc::ComposeColor = colorant"turquoise",
-    nodestrokec::ComposeColor = nothing,
-    nodestrokelw::Union(Real, Vector) = 0,
-    arrowlengthfrac::Real = Graphs.is_directed(G) ? 0.1 : 0.0,
-    arrowangleoffset = 20.0/180.0*π)
-=#
 
 """
 TODO: animation where nodes appear in birth year, 

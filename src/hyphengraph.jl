@@ -86,7 +86,7 @@ lg.weights(g::HyphenGraph) = lg.weights(g.graph)
 # I'm  not sure which one of these I need, but even with all of them calling some of the centrality stuff directly on the HyphenGraph doesn't seem to work :/
 lg.is_directed(g::HyphenGraph) = true
 lg.is_directed(::Type{HyphenGraph}) = true
-lg.is_directed(HyphenGraph) = true
+#lg.is_directed(HyphenGraph) = true
 
 # helper fcn
 function edge_has_nodes(edge, new_edges, index_map)

@@ -1,5 +1,4 @@
-using Compose, Colors
-using Cairo, Fontconfig
+using Colors
 using LightGraphs
 using DataFrames
 using Serialization
@@ -68,11 +67,12 @@ function get_country_color_picker(hg::HyphenGraph = hg; palette_start_ind = defa
 end
 
 # aaand years...
-# (min year is to set a floor to avoid Euclid et al. skewing the colorscale)
-function get_year_color_picker(all_years::Vector{I}; min_year=1000) where I<:Integer
+# (min year is to set a floor to avoid Euclid et al. skewing the colorscale, possible a logarithmic scale would be a better solution though)
+function get_year_color_picker(all_years::Vector{I}; min_year=1700) where I<:Integer
+    #min_year = minimum(all_years)
     max_year = maximum(all_years)
     num_years = max_year - min_year + 1
-    colors = RGB.(colormatch.(range(425, 670, length=num_years)))
+    colors = to_colormap(:RdYlGn_4, num_years)
     year_color_picker = Dict{Union{String,Integer,Missing},RGB}(i+min_year-1=>colors[i] for i in 1:num_years)
     year_color_picker[missing] = colorant"grey"
     for year in all_years
@@ -140,7 +140,7 @@ function get_graph_colors(node_color_prop,
         ec = default_edge_color
     end
 
-    # TODO: replace this with a function that takes the dict and the default
+    # TODO: replace this with a function that takes the dict and the default, similarly above
     if !isnothing(node_color_picker)
         #nc = [node_color_picker[hg.graph.vprops[j][Symbol(node_color_prop)]] for j in 1:nv(hg)]
         nc = map(1:nv(hg)) do j
@@ -159,13 +159,10 @@ function get_graph_colors(node_color_prop,
 end
 
 # TODO: add some default canvas size stuff to make it readable if you zoom in at least...or maybe this is doable in Pluto
-# TODO: legends/colorbars, probably also easiest to sandbox in Pluto
+# TODO: legends/colorbars
 
-# syntax to save file...
-# draw(PNG("test1.png", 40cm, 40cm), gplot(...))
-function plot_graph(hg::HyphenGraph = hg;
+function plot_graph(g::HyphenGraph = hg;
     node_label_prop = "family_name",
-#    edge_label_prop = "", # TODO: this, maybe?
     node_color_prop = "",
     default_node_color = colorant"grey",
     edge_color_prop = "",
@@ -176,27 +173,29 @@ function plot_graph(hg::HyphenGraph = hg;
     )
 
     local nl = nothing
-    #local el = nothing
     if !isnothing(node_label_prop)
-        nl = [hg.graph.vprops[i][Symbol(node_label_prop)] for i in 1:nv(hg)]
+        nl = [g.graph.vprops[i][Symbol(node_label_prop)] for i in 1:nv(g)]
     end
 
-    # if !isnothing(edge_label_prop)
-    #     el = [hg.graph.eprops[e][Symbol(edge_label_prop)] for e in edges(hg)]
-    # end
+    nc, ec = get_graph_colors(node_color_prop, edge_color_prop, g, palette_start_ind=palette_start_ind, default_node_color=default_node_color, default_edge_color=default_edge_color, male_color=male_color, female_color=female_color)
 
-    nc, ec = get_graph_colors(node_color_prop, edge_color_prop, hg, palette_start_ind=palette_start_ind, default_node_color=default_node_color, default_edge_color=default_edge_color, male_color=male_color, female_color=female_color)
-
-    f, ax, p = graphplot(hg.graph,
-                         arrow_show=true,
-                         nlabels=nl,
+    f, ax, p = graphplot(g.graph,
+                         arrow_show = true,
+                         nlabels = nl,
                          node_color = nc,
+                         edge_color = ec,
+                         node_size = 20,
+                         edge_width = 5,
+                         arrow_size = 15,
+                         nlabels_distance = 18,
+                         nlabels_textsize = 16,
 
     )
     hidedecorations!(ax); hidespines!(ax)
     deregister_interaction!(ax, :rectanglezoom)
     register_interaction!(ax, :ndrag, NodeDrag(p))
     register_interaction!(ax, :edrag, EdgeDrag(p))
+
     return f
 end
 

@@ -1,5 +1,6 @@
 using LightGraphs, MetaGraphs
 using DataFrames
+using Serialization
 
 # helper function
 function get_node_numbers(edge::DataFrameRow, node_info::DataFrame)
@@ -29,10 +30,13 @@ function HyphenGraph(node_info_path::String = joinpath(@__DIR__, "..", "data", "
     edge_info_path::String = joinpath(@__DIR__, "..", "data", "edges.csv"),
     T = Integer)
 
-    # read in node info and add index column
+    # read in node info and add index and continent column
     node_info = DataFrame(CSV.File(node_info_path))
+    country_continent = deserialize(joinpath(@__DIR__, "..", "data", "country_continent.jls"))
+    country_continent = merge(country_continent, Dict(missing=>missing))
+    node_info = select(node_info, names(node_info)..., :birth_country => ByRow(x->country_continent[x]) => :birth_continent)
     node_props = [Symbol(p) for p in names(node_info)]
-    node_info.nodenum = 1:size(node_info)[1] 
+    node_info.nodenum = 1:size(node_info)[1]
 
     # read in edge info and add src/dst columns
     edge_info = DataFrame(CSV.File(edge_info_path))

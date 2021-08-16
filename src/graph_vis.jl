@@ -42,12 +42,16 @@ function get_field_subfield_color_pickers(prop::String, hg::HyphenGraph = hg; pa
     end
 end
 
-# and for continents...
-function get_country_color_picker(hg::HyphenGraph = hg; palette_start_ind = default_palette_start_ind)
+# and for continents/countries...
+# (this could probably be merged with the prior fcn somehow)
+function get_country_continent_color_picker(prop::String, hg::HyphenGraph = hg; palette_start_ind = default_palette_start_ind)
+    @assert prop in ["birth_continent", "birth_country"]
     country_continent = deserialize(joinpath(@__DIR__, "..", "data", "country_continent.jls"))
-    countries = keys(country_continent)
+    #countries = keys(country_continent)
+    countries = unique(hg.node_info.birth_country)
     continents = unique(values(country_continent))
     palettes = get_distinct_palettes(length(continents))
+    continent_colors = Dict{Union{String,Missing},RGB}(c=>p[50] for (c,p) in zip(continents,palettes))
     continent_pals = Dict(c=>p for (c,p) in zip(continents,palettes))
     local country_colors = Dict{Union{String,Missing},RGB}()
     # this is not very efficient, maybe I'll fix it later
@@ -63,7 +67,12 @@ function get_country_color_picker(hg::HyphenGraph = hg; palette_start_ind = defa
         end
         country_colors = merge(country_colors, cc_here)
     end
-    return country_colors
+    country_colors[missing] = colorant"grey"
+    if prop == "birth_country"
+        return country_colors
+    elseif prop == "birth_continent"
+        return continent_colors
+    end
 end
 
 # aaand years...
@@ -86,7 +95,7 @@ end
 # and one to put it all together
 function get_graph_colors(node_color_prop, 
     edge_color_prop,
-    hg::HyphenGraph = hg; 
+    g::HyphenGraph = hg; 
     palette_start_ind = default_palette_start_ind,
     default_node_color = colorant"grey",
     default_edge_color = colorant"grey",
@@ -114,11 +123,11 @@ function get_graph_colors(node_color_prop,
     end
 
     if occursin("field", edge_color_prop)
-        edge_color_picker = get_field_subfield_color_pickers(edge_color_prop, hg, palette_start_ind = palette_start_ind)
+        edge_color_picker = get_field_subfield_color_pickers(edge_color_prop, g, palette_start_ind = palette_start_ind)
     end
 
-    if occursin("country", node_color_prop)
-        node_color_picker = get_country_color_picker(hg, palette_start_ind = palette_start_ind)
+    if node_color_prop in ["birth_country", "birth_continent"]
+        node_color_picker = get_country_continent_color_picker(node_color_prop, g, palette_start_ind = palette_start_ind)
     end
 
     if node_color_prop == "gender"
@@ -126,16 +135,16 @@ function get_graph_colors(node_color_prop,
     end
 
     if !(edge_color_prop in ["field", "subfield", "year"])
-        @warn "Currently, the only supported properties for edge_color_prop are field, subfield, and year. Coloring edges with default edge color: $default_edge_color."
+        @info "Currently, the only supported properties for edge_color_prop are field, subfield, and year. Coloring edges with default edge color: $default_edge_color."
     end
 
-    if !(node_color_prop in ["birth_year", "death_year", "gender", "birth_country"])
-        @warn "Currently, the only supported properties for node_color_prop are birth_year, death_year, gender, and birth_country. Coloring edges with default node color: $default_node_color."
+    if !(node_color_prop in ["birth_year", "death_year", "gender", "birth_country", "birth_continent"])
+        @info "Currently, the only supported properties for node_color_prop are birth_year, death_year, gender, and birth_country, and birth_continent. Coloring edges with default node color: $default_node_color."
     end
 
     local nc, ec
     if !isnothing(edge_color_picker)
-        ec = [edge_color_picker[hg.graph.eprops[j][Symbol(edge_color_prop)]] for j in edges(hg)]
+        ec = [edge_color_picker[g.graph.eprops[j][Symbol(edge_color_prop)]] for j in edges(g)]
     else
         ec = default_edge_color
     end
@@ -143,8 +152,8 @@ function get_graph_colors(node_color_prop,
     # TODO: replace this with a function that takes the dict and the default, similarly above
     if !isnothing(node_color_picker)
         #nc = [node_color_picker[hg.graph.vprops[j][Symbol(node_color_prop)]] for j in 1:nv(hg)]
-        nc = map(1:nv(hg)) do j
-            key = hg.graph.vprops[j][Symbol(node_color_prop)]
+        nc = map(1:nv(g)) do j
+            key = g.graph.vprops[j][Symbol(node_color_prop)]
             if ismissing(key)
                 return default_node_color
             else

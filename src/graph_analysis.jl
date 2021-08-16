@@ -23,7 +23,8 @@ function longest_path(graph::HyphenGraph = hg)
             append!(longest_start_inds, i)
         end
     end
-    return longest_length, longest_start_inds
+    paths = [find_longest_path(graph, i, log_level=0).longest_path for i in longest_start_inds]
+    return paths
 end
 
 # centrality_fcn can be any of the LightGraphs centrality measures: https://juliagraphs.org/LightGraphs.jl/stable/centrality/

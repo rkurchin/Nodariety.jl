@@ -2,7 +2,9 @@ using Colors
 using LightGraphs
 using DataFrames
 using Serialization
-using GLMakie, GraphMakie
+using GLMakie
+using GraphMakie
+using NetworkLayout
 
 default_palette_start_ind = 10
 
@@ -198,7 +200,6 @@ function plot_graph(g::HyphenGraph = hg;
                          arrow_size = 15,
                          nlabels_distance = 18,
                          nlabels_textsize = 16,
-
     )
     hidedecorations!(ax); hidespines!(ax)
     deregister_interaction!(ax, :rectanglezoom)

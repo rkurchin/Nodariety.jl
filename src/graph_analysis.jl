@@ -1,6 +1,7 @@
 using LongestPaths
 
-get_clusters(g::AbstractGraph = hg) = sort(connected_components(g.graph), by=length, rev=true)
+get_clusters(g::AbstractGraph = hg) =
+    sort(connected_components(g.graph), by = length, rev = true)
 
 """
     trim_graph(g=hg, threshold=4)
@@ -9,7 +10,7 @@ Given a graph as input, find connected clusters and return a new graph that only
 """
 function trim_graph(g::AbstractGraph = hg, threshold::Int = 4)
     clusters = get_clusters(g)
-    indices = vcat([c for c in cs if length(c)>=threshold]...)
+    indices = vcat([c for c in cs if length(c) >= threshold]...)
     return g[indices]
 end
 
@@ -17,15 +18,13 @@ end
     longest_path(graph=hg)
 
 Find the longest path in the graph and return the set of indices visited.
-
-# TODO: return top-N longest paths
 """
 function longest_path(graph::HyphenGraph = hg)
     local longest_length = 0
     local longest_start_inds = [1]
-    for i=1:nv(graph)
-        p = find_longest_path(graph, i, log_level=0)
-        len = length(p.longest_path)-1
+    for i = 1:nv(graph)
+        p = find_longest_path(graph, i, log_level = 0)
+        len = length(p.longest_path) - 1
         if len > longest_length
             longest_length = len
             longest_start_inds = [i]
@@ -33,7 +32,9 @@ function longest_path(graph::HyphenGraph = hg)
             append!(longest_start_inds, i)
         end
     end
-    paths = [find_longest_path(graph, i, log_level=0).longest_path for i in longest_start_inds]
+    paths = [
+        find_longest_path(graph, i, log_level = 0).longest_path for i in longest_start_inds
+    ]
     return paths
 end
 
@@ -49,7 +50,16 @@ function most_central(centrality_fcn::Function, g::HyphenGraph = hg)
     return g.graph.vprops[argmax(c)]
 end
 
-const centrality_fcns = [betweenness_centrality, closeness_centrality, degree_centrality, eigenvector_centrality, katz_centrality, pagerank, stress_centrality, radiality_centrality]
+const centrality_fcns = [
+    betweenness_centrality,
+    closeness_centrality,
+    degree_centrality,
+    eigenvector_centrality,
+    katz_centrality,
+    pagerank,
+    stress_centrality,
+    radiality_centrality,
+]
 
 """
     all_centrals(fcns=centrality_fcns, graph=hg)
@@ -58,8 +68,7 @@ Iterate through every centrality measure provided (defaults to the LightGraphs l
 
 See also: [`most_central`](@ref)
 
-
-# note that eigenvector_centrality gives different results upon repeated application...
+Note that eigenvector_centrality gives different results upon repeated application...
 """
 function all_centrals(fcns::Vector{Function} = centrality_fcns, graph::HyphenGraph = hg)
     for f in fcns

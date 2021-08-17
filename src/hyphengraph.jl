@@ -5,16 +5,16 @@ using Serialization
 # helper function
 function get_node_numbers(edge::DataFrameRow, node_info::DataFrame)
     local src_info, dst_info
-    src_info = filter(r->(r.family_name==edge.family_name_1), node_info)
-    dst_info = filter(r->(r.family_name==edge.family_name_2), node_info)
+    src_info = filter(r -> (r.family_name == edge.family_name_1), node_info)
+    dst_info = filter(r -> (r.family_name == edge.family_name_2), node_info)
     # to handle missing given names, can't filter on both at once
-    if size(src_info)[1]>1
-        src_info = filter(r->(r.given_name==edge.given_name_1), src_info)
+    if size(src_info)[1] > 1
+        src_info = filter(r -> (r.given_name == edge.given_name_1), src_info)
     end
-    if size(dst_info)[1]>1
-        dst_info = filter(r->(r.given_name==edge.given_name_2), dst_info)
+    if size(dst_info)[1] > 1
+        dst_info = filter(r -> (r.given_name == edge.given_name_2), dst_info)
     end
-    @assert size(src_info)[1]==1 && size(dst_info)[1]==1 "Seems you might have a missing or duplicate node at $edge"
+    @assert size(src_info)[1] == 1 && size(dst_info)[1] == 1 "Seems you might have a missing or duplicate node at $edge"
     return src_info.nodenum[1], dst_info.nodenum[1]
 end
 
@@ -29,36 +29,46 @@ struct HyphenGraph{T} <: AbstractGraph{T}
     edge_info::DataFrame
 end
 
-function HyphenGraph(node_info_path::String = joinpath(@__DIR__, "..", "data", "nodes.csv"), 
+function HyphenGraph(
+    node_info_path::String = joinpath(@__DIR__, "..", "data", "nodes.csv"),
     edge_info_path::String = joinpath(@__DIR__, "..", "data", "edges.csv"),
-    T = Integer)
+    T = Integer,
+)
 
     # read in node info and add index and continent column
     node_info = DataFrame(CSV.File(node_info_path))
-    country_continent = deserialize(joinpath(@__DIR__, "..", "data", "country_continent.jls"))
-    country_continent = merge(country_continent, Dict(missing=>missing))
-    node_info = select(node_info, names(node_info)..., :birth_country => ByRow(x->country_continent[x]) => :birth_continent)
+    country_continent =
+        deserialize(joinpath(@__DIR__, "..", "data", "country_continent.jls"))
+    country_continent = merge(country_continent, Dict(missing => missing))
+    node_info = select(
+        node_info,
+        names(node_info)...,
+        :birth_country => ByRow(x -> country_continent[x]) => :birth_continent,
+    )
     node_props = [Symbol(p) for p in names(node_info)]
     node_info.nodenum = 1:size(node_info)[1]
 
     # read in edge info and add src/dst columns
     edge_info = DataFrame(CSV.File(edge_info_path))
-    edge_props = [Symbol(p) for p in names(edge_info) if !any(contains.(p, ["family_name","given_name"]))]
-    src_dest_tuples = map(r->Nodariety.get_node_numbers(r, node_info), eachrow(edge_info))
-    edge_info.src = [sdt[1] for sdt in src_dest_tuples] 
-    edge_info.dst = [sdt[2] for sdt in src_dest_tuples] 
- 
+    edge_props = [
+        Symbol(p) for
+        p in names(edge_info) if !any(contains.(p, ["family_name", "given_name"]))
+    ]
+    src_dest_tuples = map(r -> Nodariety.get_node_numbers(r, node_info), eachrow(edge_info))
+    edge_info.src = [sdt[1] for sdt in src_dest_tuples]
+    edge_info.dst = [sdt[2] for sdt in src_dest_tuples]
+
     graph = MetaDiGraph(SimpleDiGraph(size(node_info)[1]))
 
     # add node properties
     for row in eachrow(node_info)
-        props = Dict(p=>getproperty(row ,p) for p in node_props)
+        props = Dict(p => getproperty(row, p) for p in node_props)
         set_props!(graph, row.nodenum, props)
     end
 
     # add edges and properties
     for row in eachrow(edge_info)
-        props = Dict(p=>getproperty(row, p) for p in edge_props)
+        props = Dict(p => getproperty(row, p) for p in edge_props)
         nodenums = row.src, row.dst
         add_edge!(graph, nodenums..., props)
     end
@@ -69,16 +79,14 @@ end
 # pretty printing
 function Base.show(io::IO, g::HyphenGraph)
     st = "HyphenGraph with $(nv(g)) people, $(ne(g)) hyphens"
-    # if length(g.featurization)!=0
-    #     st = string(st, ", feature vector length $(size(g.features)[1])")
-    # end
     print(io, st)
 end
 
 # implement LightGraphs API...
 const lg = LightGraphs
 # Base.reverse
-Base.zero(HyphenGraph) = HyphenGraph(MetaDiGraph(zero(SimpleDiGraph)), DataFrame(), DataFrame())
+Base.zero(HyphenGraph) =
+    HyphenGraph(MetaDiGraph(zero(SimpleDiGraph)), DataFrame(), DataFrame())
 lg.edges(g::HyphenGraph) = lg.edges(g.graph)
 lg.edgetype(g::HyphenGraph) = lg.edgetype(g.graph)
 lg.has_edge(g::HyphenGraph, i, j) = lg.has_edge(g.graph, i, j)
@@ -108,7 +116,10 @@ function edge_has_nodes(edge, new_edges, index_map)
     end
 end
 
-function lg.induced_subgraph(g::HyphenGraph{T}, vlist::AbstractVector{U}) where {U<:Integer, T<:Integer}
+function lg.induced_subgraph(
+    g::HyphenGraph{T},
+    vlist::AbstractVector{U},
+) where {U<:Integer,T<:Integer}
     # this is the easy part...
     new_graph = g.graph[vlist]
 
@@ -119,18 +130,16 @@ function lg.induced_subgraph(g::HyphenGraph{T}, vlist::AbstractVector{U}) where 
 
     # now edges...a bit trickier
     # this is not quite right but it's something like this...
-    index_map = Dict(vlist[i]=>i for i in 1:length(vlist))
+    index_map = Dict(vlist[i] => i for i = 1:length(vlist))
     new_edges = [(e.src, e.dst) for e in edges(new_graph)]
 
     new_edge_info = filter(e -> edge_has_nodes(e, new_edges, index_map), hg.edge_info)
-    @assert size(new_edge_info,1) == ne(new_graph) "Edge counts don't match up!"
+    @assert size(new_edge_info, 1) == ne(new_graph) "Edge counts don't match up!"
 
-    new_edge_info.src = map(i->index_map[i], new_edge_info.src)
-    new_edge_info.dst = map(i->index_map[i], new_edge_info.dst)
+    new_edge_info.src = map(i -> index_map[i], new_edge_info.src)
+    new_edge_info.dst = map(i -> index_map[i], new_edge_info.dst)
 
-    vmap = map(i->index_map[i], vlist)
+    vmap = map(i -> index_map[i], vlist)
 
     return HyphenGraph{T}(new_graph, new_node_info, new_edge_info), vmap
-
 end
-

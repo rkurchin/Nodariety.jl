@@ -9,7 +9,7 @@ export HyphenGraph, hg
 export is_directed
 
 include("demographics.jl")
-# export ...
+export node_histogram
 
 include("graph_analysis.jl")
 export longest_path, get_clusters

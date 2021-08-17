@@ -2,30 +2,27 @@ using DataFrames
 using StatsBase
 using GLMakie
 
-function get_histogram_data(df, column_name)
-    subset = dropmissing(df, column_name)
-    gd = groupby(node_df, colunn_name)
-    # ...
-end
+"""
+    node_histogram(prop, g=hg)
 
-# subset = dropmissing(node_df, :birth_year)
-# bins = vcat(1500:20:2000)
-# hist(subset.birth_year, bins=bins)
+Make a histogram of values of a node property of the HyphenGraph.
 
-
-
-# differences in birth year along edges?
-
-# histograms of gender, birth year, race, country, etc...
-
-# for the case of country...
-function country_hist()
-    data = skipmissing(node_df.birth_country)
+Options for `prop` currently include: "birth_country", "birth_continent", "race", "gender", "given_name"
+"""
+function node_histogram(prop, g::HyphenGraph = hg, fig_height = 600)
+    data = skipmissing(g.node_info[:, prop])
     datamap = countmap(data)
-    s = sort(unique(data), by=x->datamap[x], rev=true)
-    #barplot((x -> datamap[x]).(s), xticks=(1:36, s), xrotation=90)
-    f = Figure()
-    a = Axis(f[1,1], xlabel="Country", ylabel="Count", xticks = (1:36, s), xticklabelrotation=π/3)
-    barplot!(a, 1:36, (x -> datamap[x]).(s))
+    s = sort(unique(data), by = x -> datamap[x], rev = true)
+    fig_width =
+        maximum([Int(round(length(s) / 20 * fig_height)), Int(round(fig_height / 2))])
+    f = Figure(resolution = (fig_width, fig_height))
+    a = Axis(
+        f[1, 1],
+        xlabel = prop,
+        ylabel = "count",
+        xticks = (1:length(datamap), s),
+        xticklabelrotation = π / 3,
+    )
+    barplot!(a, 1:length(datamap), (x -> datamap[x]).(s))
     display(f)
 end

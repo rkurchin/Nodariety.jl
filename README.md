@@ -54,6 +54,6 @@ There are also some functions for looking at the demographics of the folks repre
 
 There are plenty of ways you can help! Here are a few:
 
-* Add more data! Please send PR's to the repo and make sure you add to both `nodes.csv` and `edges.csv` appropriately, including as much information as you can verify.
+* Add more data! Please send PR's to the repo and make sure you add to both `nodes.csv` and `edges.csv` appropriately, including as much information as you can verify, and being sure that the graph builds properly before PRing.
 * Help with graph layout. The automatic layout (and all the ones built into NetworkLayout.jl that I've played with) leaves a fair bit to be desired at the moment. If you're handy with that sort of thing, I'd love help with it!
 * Feel free also to PR other analysis functions or anything you'd like!

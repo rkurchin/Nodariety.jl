@@ -9,7 +9,7 @@ function trim_graph(g::AbstractGraph = hg, threshold::Int = 4)
     return g[indices]
 end
 
-# TODO: return all the indices, return top-N longest
+# TODO: return top-N longest
 function longest_path(graph::HyphenGraph = hg)
     local longest_length = 0
     local longest_start_inds = [1]

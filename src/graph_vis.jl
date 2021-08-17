@@ -191,6 +191,7 @@ function plot_graph(g::HyphenGraph = hg;
     nc, ec = get_graph_colors(node_color_prop, edge_color_prop, g, palette_start_ind=palette_start_ind, default_node_color=default_node_color, default_edge_color=default_edge_color, male_color=male_color, female_color=female_color)
 
     f, ax, p = graphplot(g.graph,
+                         layout = Spring(C=0.02),
                          arrow_show = true,
                          nlabels = nl,
                          node_color = nc,
@@ -199,7 +200,7 @@ function plot_graph(g::HyphenGraph = hg;
                          edge_width = 5,
                          arrow_size = 15,
                          nlabels_distance = 18,
-                         nlabels_textsize = 16,
+                         nlabels_textsize = 20,
     )
     hidedecorations!(ax); hidespines!(ax)
     deregister_interaction!(ax, :rectanglezoom)

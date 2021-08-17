@@ -2,14 +2,24 @@ using LongestPaths
 
 get_clusters(g::AbstractGraph = hg) = sort(connected_components(g.graph), by=length, rev=true)
 
-# drop small disconnected components
+"""
+    trim_graph(g=hg, threshold=4)
+
+Given a graph as input, find connected clusters and return a new graph that only retains clusters at least the size of `threshold`.
+"""
 function trim_graph(g::AbstractGraph = hg, threshold::Int = 4)
     clusters = get_clusters(g)
     indices = vcat([c for c in cs if length(c)>=threshold]...)
     return g[indices]
 end
 
-# TODO: return top-N longest
+"""
+    longest_path(graph=hg)
+
+Find the longest path in the graph and return the set of indices visited.
+
+# TODO: return top-N longest paths
+"""
 function longest_path(graph::HyphenGraph = hg)
     local longest_length = 0
     local longest_start_inds = [1]
@@ -27,8 +37,13 @@ function longest_path(graph::HyphenGraph = hg)
     return paths
 end
 
-# centrality_fcn can be any of the LightGraphs centrality measures: https://juliagraphs.org/LightGraphs.jl/stable/centrality/
-# e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
+"""
+    most_central(centrality_fcn, g=hg)
+
+Return the most central node in `g` according to the provided centrality measure. `centrality_fcn` can be any of the LightGraphs centrality measures: https://juliagraphs.org/LightGraphs.jl/stable/centrality/ e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
+
+See also: [`all_centrals`](@ref)
+"""
 function most_central(centrality_fcn::Function, g::HyphenGraph = hg)
     c = centrality_fcn(g.graph)
     return g.graph.vprops[argmax(c)]
@@ -36,7 +51,16 @@ end
 
 const centrality_fcns = [betweenness_centrality, closeness_centrality, degree_centrality, eigenvector_centrality, katz_centrality, pagerank, stress_centrality, radiality_centrality]
 
+"""
+    all_centrals(fcns=centrality_fcns, graph=hg)
+
+Iterate through every centrality measure provided (defaults to the LightGraphs list) and find the most central node of it in `graph`. Print results.
+
+See also: [`most_central`](@ref)
+
+
 # note that eigenvector_centrality gives different results upon repeated application...
+"""
 function all_centrals(fcns::Vector{Function} = centrality_fcns, graph::HyphenGraph = hg)
     for f in fcns
         node = most_central(f, graph)

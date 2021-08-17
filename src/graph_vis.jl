@@ -15,7 +15,7 @@ function get_distinct_palettes(num::T) where T<:Integer
     return sequential_palette.(hues)
 end
 
-# figure out colors for subfields...
+# helper fcn to figure out colors for subfields...
 function get_field_subfield_color_pickers(prop::String, hg::HyphenGraph = hg; palette_start_ind = default_palette_start_ind)
     @assert prop in ["field", "subfield"]
     fields = unique(skipmissing(hg.edge_info.field))
@@ -169,20 +169,32 @@ function get_graph_colors(node_color_prop,
     return nc, ec
 end
 
-# TODO: add some default canvas size stuff to make it readable if you zoom in at least...or maybe this is doable in Pluto
-# TODO: legends/colorbars
+"""
+    plot_graph(g=hg; node_label_prop="family_name", node_color_prop="", edge_color_prop="", ...)
 
+Create an interactive visualization of the HyphenGraph `g` using GraphMakie and the GLMakie backend.
+
+# Arguments
+- `g::HyphenGraph=hg`: the graph to visualize
+- `node_label_prop: Property by which to label the graph nodes. Defaults to surname.
+- `node_color_prop: Property by which to color the nodes. Supported options are ["birth_year", "death_year", "gender", "birth_country", "birth_continent"]
+- `edge_color_prop`: Property by which to color the edges. Supported options are ["field", "subfield", "year"]
+- `default_node_color`: If `node_color_prop` is unspecified or that information is missing for a node, color to use instead. Defaults to grey.
+- `default_edge_color`: Analogous to above
+
+TODO: legends/colorbars, improve layout
+"""
 function plot_graph(g::HyphenGraph = hg;
     node_label_prop = "family_name",
     node_color_prop = "",
     default_node_color = colorant"grey",
     edge_color_prop = "",
     default_edge_color = colorant"grey",
-    palette_start_ind = 10,
-    male_color = colorant"lightblue",
-    female_color = colorant"pink"
     )
 
+    palette_start_ind = 10
+    male_color = colorant"lightblue"
+    female_color = colorant"pink"
     local nl = nothing
     if !isnothing(node_label_prop)
         nl = [g.graph.vprops[i][Symbol(node_label_prop)] for i in 1:nv(g)]

@@ -18,14 +18,17 @@ function get_node_numbers(edge::DataFrameRow, node_info::DataFrame)
     return src_info.nodenum[1], dst_info.nodenum[1]
 end
 
+"""
+    HyphenGraph(node_info_path, edge_info_path)
+
+Construct a HyphenGraph object given paths to two CSV's containing the requisite information about the nodes and edges. These default to the built-in datasets. The resulting HyphenGraph object stores the graph itself as a `MetaDiGraph` (with features from the CSV's attached to nodes and edges), as well as the contents of the CSV's as DataFrames in the `node_info` and `edge_info` fields.
+"""
 struct HyphenGraph{T} <: AbstractGraph{T}
     graph::MetaDiGraph
     node_info::DataFrame
     edge_info::DataFrame
 end
 
-# function HyphenGraph(node_info_path::String = joinpath(pathof(Nodariety), "data", "nodes.csv"), 
-#     edge_info_path::String = joinpath(pathof(Nodariety), "data", "elements.csv"))
 function HyphenGraph(node_info_path::String = joinpath(@__DIR__, "..", "data", "nodes.csv"), 
     edge_info_path::String = joinpath(@__DIR__, "..", "data", "edges.csv"),
     T = Integer)

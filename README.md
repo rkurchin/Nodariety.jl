@@ -5,6 +5,8 @@ Nodariety is a fun (I hope) exploration of the directed graph of concept/theory/
 
 For more of the story behind this package and some example analyses, see the blog post [here](link_coming_soon).
 
+For a different take on visualizing this graph, check out [this repo](https://github.com/rkurchin/nodarietyvis), or just [this site](https://rkurchin.github.io/nodarietyvis/) directly.
+
 ## What do you get?
 If you were to install the package (`]add Nodariety`) and import it (`using Nodariety`), what could you then do?
 
@@ -46,9 +48,7 @@ stress_centrality: Albert Einstein
 radiality_centrality: Niels Abel
 ```
 
-We can also ask about largest connected clusters...
-
-There are also some functions for looking at the demographics of the folks represented (unsurprisingly, they are overwhelmingly European and male)...
+We can also ask about largest connected clusters (see `get_clusters` and `trim_graph` functions), and check out the `node_histogram` function for ways to directly probe the demographics of the folks represented in this dataset (unsurprisingly, they are overwhelmingly European and male)...
 
 ## I want to contribute!
 

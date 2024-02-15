@@ -1,4 +1,4 @@
-using LightGraphs, MetaGraphs
+using Graphs, MetaGraphs
 using DataFrames
 using Serialization
 
@@ -82,26 +82,20 @@ function Base.show(io::IO, g::HyphenGraph)
     print(io, st)
 end
 
-# implement LightGraphs API...
-const lg = LightGraphs
-# Base.reverse
+# implement Graphs API...
 Base.zero(HyphenGraph) =
     HyphenGraph(MetaDiGraph(zero(SimpleDiGraph)), DataFrame(), DataFrame())
-lg.edges(g::HyphenGraph) = lg.edges(g.graph)
-lg.edgetype(g::HyphenGraph) = lg.edgetype(g.graph)
-lg.has_edge(g::HyphenGraph, i, j) = lg.has_edge(g.graph, i, j)
-lg.has_vertex(g::HyphenGraph, v::Integer) = lg.has_vertex(g.graph, v)
-lg.inneighbors(g::HyphenGraph, node) = lg.inneighbors(g.graph, node)
-lg.ne(g::HyphenGraph) = lg.ne(g.graph)
-lg.nv(g::HyphenGraph) = lg.nv(g.graph)
-lg.outneighbors(g::HyphenGraph, node) = lg.outneighbors(g.graph, node)
-lg.vertices(g::HyphenGraph) = lg.vertices(g.graph)
-lg.eltype(g::HyphenGraph) = lg.eltype(g.graph)
-lg.weights(g::HyphenGraph) = lg.weights(g.graph)
-# I'm  not sure which one of these I need, but even with all of them calling some of the centrality stuff directly on the HyphenGraph doesn't seem to work :/
-lg.is_directed(g::HyphenGraph) = true
-lg.is_directed(::Type{HyphenGraph}) = true
-#lg.is_directed(HyphenGraph) = true
+Graphs.edges(g::HyphenGraph) = Graphs.edges(g.graph)
+Graphs.edgetype(g::HyphenGraph) = Graphs.edgetype(g.graph)
+Graphs.has_edge(g::HyphenGraph, i, j) = Graphs.has_edge(g.graph, i, j)
+Graphs.has_vertex(g::HyphenGraph, v::Integer) = Graphs.has_vertex(g.graph, v)
+Graphs.inneighbors(g::HyphenGraph, node) = Graphs.inneighbors(g.graph, node)
+Graphs.ne(g::HyphenGraph) = Graphs.ne(g.graph)
+Graphs.nv(g::HyphenGraph) = Graphs.nv(g.graph)
+Graphs.outneighbors(g::HyphenGraph, node) = Graphs.outneighbors(g.graph, node)
+Graphs.vertices(g::HyphenGraph) = Graphs.vertices(g.graph)
+Graphs.is_directed(g::HyphenGraph) = true
+Graphs.is_directed(::Type{HyphenGraph}) = true
 
 # helper fcn
 function edge_has_nodes(edge, new_edges, index_map)
@@ -116,7 +110,10 @@ function edge_has_nodes(edge, new_edges, index_map)
     end
 end
 
-function lg.induced_subgraph(
+# NB that this implementation messes up the indices currently
+# which is why in graph_analysis.jl, I have to call induced_subraph on graph.graph
+# instead of just graph
+function Graphs.induced_subgraph(
     g::HyphenGraph{T},
     vlist::AbstractVector{U},
 ) where {U<:Integer,T<:Integer}

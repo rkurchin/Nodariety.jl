@@ -1,7 +1,7 @@
 module Nodariety
 
 using CSV, DataFrames
-using LightGraphs
+using Graphs
 
 include("hyphengraph.jl")
 hg = HyphenGraph()

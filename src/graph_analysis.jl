@@ -41,7 +41,7 @@ end
 """
     most_central(centrality_fcn, g=hg)
 
-Return the most central node in `g` according to the provided centrality measure. `centrality_fcn` can be any of the Graphs centrality measures: https://juliagraphs.org/Graphs.jl/stable/algorithms/centrality/ e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
+Return the most central node in `g` according to the provided centrality measure. `centrality_fcn` can be any of the Graphs centrality measures: https://juliagraphs.org/Graphs.jl/stable/algorithms/centrality/ e.g. `betweenness_centrality`, `closeness_centrality`, `degree_centrality`, and many others...
 
 See also: [`all_centrals`](@ref)
 """

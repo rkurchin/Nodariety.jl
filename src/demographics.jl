@@ -7,7 +7,7 @@ using GLMakie
 
 Make a histogram of values of a node property of the HyphenGraph.
 
-Options for `prop` currently include: "birth_country", "birth_continent", "race", "gender", "given_name"
+Options for `prop` currently include: `birth_country`, `birth_continent`, `race`, `gender`, `given_name`
 """
 function node_histogram(prop, g::HyphenGraph = hg, fig_height = 600)
     data = skipmissing(g.node_info[:, prop])

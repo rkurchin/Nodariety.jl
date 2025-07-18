@@ -23,7 +23,7 @@ function longest_path(graph::HyphenGraph = hg)
     local longest_length = 0
     local longest_start_inds = [1]
     for i = 1:nv(graph)
-        p = find_longest_path(graph, i, log_level = 0)
+        p = find_longest_path(graph.graph, i, log_level = 0)
         len = length(p.longest_path) - 1
         if len > longest_length
             longest_length = len
@@ -33,7 +33,7 @@ function longest_path(graph::HyphenGraph = hg)
         end
     end
     paths = [
-        find_longest_path(graph, i, log_level = 0).longest_path for i in longest_start_inds
+        find_longest_path(graph.graph, i, log_level = 0).longest_path for i in longest_start_inds
     ]
     return paths
 end
@@ -41,7 +41,7 @@ end
 """
     most_central(centrality_fcn, g=hg)
 
-Return the most central node in `g` according to the provided centrality measure. `centrality_fcn` can be any of the LightGraphs centrality measures: https://juliagraphs.org/LightGraphs.jl/stable/centrality/ e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
+Return the most central node in `g` according to the provided centrality measure. `centrality_fcn` can be any of the Graphs centrality measures: https://juliagraphs.org/Graphs.jl/stable/algorithms/centrality/ e.g. betweenness_centrality, closeness_centrality, degree_centrality, and many others...
 
 See also: [`all_centrals`](@ref)
 """
@@ -64,7 +64,7 @@ const centrality_fcns = [
 """
     all_centrals(fcns=centrality_fcns, graph=hg)
 
-Iterate through every centrality measure provided (defaults to the LightGraphs list) and find the most central node of it in `graph`. Print results.
+Iterate through every centrality measure provided (defaults to the Graphs.jl list) and find the most central node of it in `graph`. Print results.
 
 See also: [`most_central`](@ref)
 

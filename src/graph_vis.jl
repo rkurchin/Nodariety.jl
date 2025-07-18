@@ -1,5 +1,5 @@
 using Colors
-using LightGraphs
+using Graphs
 using DataFrames
 using Serialization
 using GLMakie

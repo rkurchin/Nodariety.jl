@@ -12,7 +12,7 @@ If you were to install the package (`]add Nodariety`) and import it (`using Noda
 
 The package exports the `HyphenGraph` type, as well as a default instance of it called `hg`, which has all the data described by the two CSV files in the `data/` folder of this repo.
 
-Because `HyphenGraph` is a subtype of `AbstractGraph`, a lot of the graph analysis algorithms in `LightGraph` "just work" on it! The package has a variety of functions to play around with this. They all use `hg` as the default argument, so you can call them straight-up. For example, suppose we wanted to find the longest path we can traverse:
+Because `HyphenGraph` is a subtype of `AbstractGraph`, all the graph analysis algorithms in `Graphs` "just work" on it! The package has a variety of functions to play around with this. They all use `hg` as the default argument, so you can call them straight-up. For example, suppose we wanted to find the longest path we can traverse:
 
 ```julia
 julia> paths = longest_path()

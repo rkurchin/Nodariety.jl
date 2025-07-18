@@ -15,7 +15,7 @@ function node_histogram(prop, g::HyphenGraph = hg, fig_height = 600)
     s = sort(unique(data), by = x -> datamap[x], rev = true)
     fig_width =
         maximum([Int(round(length(s) / 20 * fig_height)), Int(round(fig_height / 2))])
-    f = Figure(resolution = (fig_width, fig_height))
+    f = Figure(; size = (fig_width, fig_height))
     a = Axis(
         f[1, 1],
         xlabel = prop,

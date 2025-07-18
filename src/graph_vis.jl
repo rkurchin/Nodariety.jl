@@ -96,7 +96,7 @@ function get_year_color_picker(all_years::Vector{I}; min_year = 1700) where {I<:
     #min_year = minimum(all_years)
     max_year = maximum(all_years)
     num_years = max_year - min_year + 1
-    colors = to_colormap(:RdYlGn_4, num_years)
+    colors = Makie.resample_cmap(:RdYlGn_4, num_years)
     year_color_picker = Dict{Union{String,Integer,Missing},RGB}(
         i + min_year - 1 => colors[i] for i = 1:num_years
     )
